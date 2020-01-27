@@ -23,7 +23,7 @@
 
     </appender>
 
-    <logger name="com.lxgolovin.sandbox.pdf.validation" level="debug"
+    <logger name="com.lxgolovin.sandbox.pdf.compare" level="debug"
             additivity="false">
         <appender-ref ref="FILE-ROLLING"/>
     </logger>

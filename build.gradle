@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     implementation("org.apache.pdfbox:pdfbox:$pdfbox2Version")
+    implementation("com.googlecode.java-diff-utils:diffutils:$diffutilsVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
