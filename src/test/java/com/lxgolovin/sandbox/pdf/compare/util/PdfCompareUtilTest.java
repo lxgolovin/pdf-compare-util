@@ -1,5 +1,7 @@
 package com.lxgolovin.sandbox.pdf.compare.util;
 
+import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
+import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -26,9 +28,12 @@ class PdfCompareUtilTest {
     }
 
     @Test
-    void compareEntireDocumentsEqualPdfByText() throws URISyntaxException, IOException {
+    void compareNullPdf() {
         assertThrows(IllegalArgumentException.class, () -> pdfCompareUtil.compare(null, null));
+    }
 
+    @Test
+    void compareEqualPdfByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
         Path sample2Path = getFilePath("sample_text_compare_equal_2.pdf");
 
@@ -41,17 +46,70 @@ class PdfCompareUtilTest {
     }
 
     @Test
-    void compareEntireDocumentsNotEqualPdfByText() throws URISyntaxException, IOException {
-        assertThrows(IllegalArgumentException.class, () -> pdfCompareUtil.compare(null, null));
-
+    void compareChangedPdfByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_differ_1.pdf");
+        Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
 
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            boolean notEqual = pdfCompareUtil.compare(document1, document2).isHasErrors();
-            assertTrue(notEqual);
+            CompareReport report = pdfCompareUtil.compare(document1, document2);
+
+            assertTrue(report.isHasErrors());
+            boolean isNotOnlyChanged = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_CHANGED);
+            assertFalse(isNotOnlyChanged);
+        }
+    }
+
+    @Test
+    void compareInsertedPdfByText() throws URISyntaxException, IOException {
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
+        Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
+
+        try (PdfDocument document1 = new PdfDocument(sample1Path);
+             PdfDocument document2 = new PdfDocument(sample2Path)) {
+
+            CompareReport report = pdfCompareUtil.compare(document1, document2);
+
+            assertTrue(report.isHasErrors());
+            boolean isNotOnlyInserted = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_INSERTED);
+            assertFalse(isNotOnlyInserted);
+        }
+    }
+
+    @Test
+    void compareDeletedPdfByText() throws URISyntaxException, IOException {
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
+        Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
+
+        try (PdfDocument document1 = new PdfDocument(sample1Path);
+             PdfDocument document2 = new PdfDocument(sample2Path)) {
+
+            CompareReport report = pdfCompareUtil.compare(document1, document2);
+
+            assertTrue(report.isHasErrors());
+            boolean isNotOnlyDeleted = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_DELETED);
+            assertFalse(isNotOnlyDeleted);
+        }
+    }
+
+    @Test
+    void comparePdfPagesNumberMismatch() throws URISyntaxException, IOException {
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
+        Path sample2Path = getFilePath("sample_text_compare_differ_pages.pdf");
+
+        try (PdfDocument document1 = new PdfDocument(sample1Path);
+             PdfDocument document2 = new PdfDocument(sample2Path)) {
+
+            CompareReport report = pdfCompareUtil.compare(document1, document2);
+
+            assertTrue(report.isHasErrors());
+            boolean notOnlyPagesMismatch = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.WRONG_SIZE);
+            assertFalse(notOnlyPagesMismatch);
         }
     }
 
