@@ -4,12 +4,11 @@ import lombok.Getter;
 
 import java.util.Optional;
 
+@Getter
 public class CompareError {
 
-    @Getter
     private final ErrorType errorType;
 
-    @Getter
     private final String errorDetails;
 
     public CompareError(ErrorType errorType, String errorDetails) {

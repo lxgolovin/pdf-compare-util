@@ -7,6 +7,7 @@ import difflib.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.text.PDFTextStripper;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public final class PdfCompareUtil {
                 .orElseThrow(() -> new IllegalArgumentException("Pdf document should not be null"));
     }
 
-    public CompareReport compare(PdfDocument source, PdfDocument target) {
+    public CompareReport compare(PdfDocument source, PdfDocument target) throws IOException {
         if ((source == null) || (target == null)) {
             throw new IllegalArgumentException("Source or target pdf document is null");
         }
@@ -34,13 +35,13 @@ public final class PdfCompareUtil {
         String sourceText = getTextFromPdf(source);
         String targetText = getTextFromPdf(target);
         if (!sourceText.equals(targetText)) {
-            findDifference(sourceText, targetText);
+            reportDifference(sourceText, targetText);
         }
 
         return report;
     }
 
-    private void findDifference(String sourceText, String targetText) {
+    private void reportDifference(String sourceText, String targetText) {
         List<String> sourceLines = Arrays.asList(sourceText.split("\\r?\\n"));
         List<String> targetLines = Arrays.asList(targetText.split("\\r?\\n"));
         Patch<String> patch = DiffUtils.diff(sourceLines, targetLines);
@@ -65,21 +66,10 @@ public final class PdfCompareUtil {
         return source.getPageCount() == target.getPageCount();
     }
 
-    private String getTextFromPdf(PdfDocument document) {
-        return Optional.of(document)
-                .map(PdfDocument::getDocument)
-                .map(d -> {
-                    try {
-                        PDFTextStripper stripper = new PDFTextStripper();
-                        stripper.setStartPage(1);
-                        stripper.setEndPage(d.getNumberOfPages());
-                        String text = stripper.getText(d);
-                        return text;
-                    } catch (Exception e) {
-                        //
-                        return null;
-                    }
-                })
-                .orElseThrow(() -> new IllegalArgumentException("Pdf document should not be null"));
+    private String getTextFromPdf(PdfDocument document) throws IOException {
+        PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(1);
+        stripper.setEndPage(document.getPageCount());
+        return stripper.getText(document.getDocument());
     }
 }
