@@ -7,12 +7,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+@Getter
 public final class PdfDocument implements AutoCloseable {
 
-    @Getter
     private final PDDocument document;
 
-    @Getter
     private final int pageCount;
 
     public PdfDocument(Path path) throws IOException {

@@ -14,8 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PdfCompareUtilTest {
 
-    PdfCompareUtil pdfCompareUtil = new PdfCompareUtil();
-
     @Test
     void getPageCount() throws IOException, URISyntaxException {
         assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.getPageCount(null));
@@ -29,7 +27,7 @@ class PdfCompareUtilTest {
 
     @Test
     void compareNullPdf() {
-        assertThrows(IllegalArgumentException.class, () -> pdfCompareUtil.compare(null, null));
+        assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.compare(null, null));
     }
 
     @Test
@@ -40,7 +38,7 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            boolean notEqual = pdfCompareUtil.compare(document1, document2).isHasErrors();
+            boolean notEqual = PdfCompareUtil.compare(document1, document2).isHasErrors();
             assertFalse(notEqual);
         }
     }
@@ -53,7 +51,7 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            CompareReport report = pdfCompareUtil.compare(document1, document2);
+            CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
             boolean isNotOnlyChanged = report.getCompareErrors().stream()
@@ -70,7 +68,7 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            CompareReport report = pdfCompareUtil.compare(document1, document2);
+            CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
             boolean isNotOnlyInserted = report.getCompareErrors().stream()
@@ -87,7 +85,7 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            CompareReport report = pdfCompareUtil.compare(document1, document2);
+            CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
             boolean isNotOnlyDeleted = report.getCompareErrors().stream()
@@ -104,7 +102,7 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            CompareReport report = pdfCompareUtil.compare(document1, document2);
+            CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
             boolean notOnlyPagesMismatch = report.getCompareErrors().stream()

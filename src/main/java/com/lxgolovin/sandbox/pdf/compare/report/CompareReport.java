@@ -1,21 +1,25 @@
 package com.lxgolovin.sandbox.pdf.compare.report;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 public class CompareReport {
 
-    @Setter
-    private boolean hasErrors;
-
     private final List<CompareError> compareErrors = new ArrayList<>();
 
+    private boolean hasErrors;
+
     public void add(CompareError error) {
-        compareErrors.add(error);
-        setHasErrors(true);
+        Optional.ofNullable(error).map(compareErrors::add);
+        this.hasErrors = true;
+    }
+
+    public void addAll(List<CompareError> errorList) {
+        Optional.ofNullable(errorList).map(compareErrors::addAll);
+        this.hasErrors = true;
     }
 }
