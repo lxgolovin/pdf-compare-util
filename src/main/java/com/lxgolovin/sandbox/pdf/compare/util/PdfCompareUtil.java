@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @UtilityClass
 public final class PdfCompareUtil {
@@ -46,24 +48,30 @@ public final class PdfCompareUtil {
         List<String> targetLines = Arrays.asList(targetText.split("\\r?\\n"));
         Patch<String> patch = DiffUtils.diff(sourceLines, targetLines);
 
-        List<CompareError> report = new ArrayList<>();
+        return Stream.concat(
+                Stream.concat(
+                        getInsertedCompareError(patch),
+                        getDeletedCompareError(patch)),
+                getChangedCompareError(patch))
+                .collect(Collectors.toList());
+    }
 
-        patch.getDeltas().stream()
-                .filter(d -> d.getType().equals(Delta.TYPE.INSERT))
-                .map(d -> new CompareError(ErrorType.LINE_INSERTED, d.toString()))
-                .forEach(report::add);
-
-        patch.getDeltas().stream()
+    private static Stream<CompareError> getDeletedCompareError(Patch<String> patch) {
+        return patch.getDeltas().stream()
                 .filter(d -> d.getType().equals(Delta.TYPE.CHANGE))
-                .map(d -> new CompareError(ErrorType.LINE_CHANGED, d.toString()))
-                .forEach(report::add);
+                .map(d -> new CompareError(ErrorType.LINE_CHANGED, d.toString()));
+    }
 
-        patch.getDeltas().stream()
-                .filter(d -> d.getType().equals(Delta.TYPE.DELETE))
-                .map(d -> new CompareError(ErrorType.LINE_DELETED, d.toString()))
-                .forEach(report::add);
+    private static Stream<CompareError> getChangedCompareError(Patch<String> patch) {
+        return patch.getDeltas().stream()
+                .filter(d -> d.getType().equals(Delta.TYPE.CHANGE))
+                .map(d -> new CompareError(ErrorType.LINE_CHANGED, d.toString()));
+    }
 
-        return report;
+    private static Stream<CompareError> getInsertedCompareError(Patch<String> patch) {
+        return patch.getDeltas().stream()
+                .filter(d -> d.getType().equals(Delta.TYPE.INSERT))
+                .map(d -> new CompareError(ErrorType.LINE_INSERTED, d.toString()));
     }
 
     private static boolean isSameSize(PdfDocument source, PdfDocument target) {
