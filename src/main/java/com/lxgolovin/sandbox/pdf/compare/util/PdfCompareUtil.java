@@ -8,7 +8,6 @@ import lombok.experimental.UtilityClass;
 import org.apache.pdfbox.text.PDFTextStripper;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -48,18 +47,18 @@ public final class PdfCompareUtil {
         List<String> targetLines = Arrays.asList(targetText.split("\\r?\\n"));
         Patch<String> patch = DiffUtils.diff(sourceLines, targetLines);
 
-        return Stream.concat(
-                Stream.concat(
-                        getInsertedCompareError(patch),
-                        getDeletedCompareError(patch)),
-                getChangedCompareError(patch))
+        return Stream.of(
+                getInsertedCompareError(patch),
+                getChangedCompareError(patch),
+                getDeletedCompareError(patch))
+                .flatMap(s -> s)
                 .collect(Collectors.toList());
     }
 
     private static Stream<CompareError> getDeletedCompareError(Patch<String> patch) {
         return patch.getDeltas().stream()
-                .filter(d -> d.getType().equals(Delta.TYPE.CHANGE))
-                .map(d -> new CompareError(ErrorType.LINE_CHANGED, d.toString()));
+                .filter(d -> d.getType().equals(Delta.TYPE.DELETE))
+                .map(d -> new CompareError(ErrorType.LINE_DELETED, d.toString()));
     }
 
     private static Stream<CompareError> getChangedCompareError(Patch<String> patch) {

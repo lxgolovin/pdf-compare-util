@@ -38,8 +38,10 @@ class PdfCompareUtilTest {
         try (PdfDocument document1 = new PdfDocument(sample1Path);
              PdfDocument document2 = new PdfDocument(sample2Path)) {
 
-            boolean notEqual = PdfCompareUtil.compare(document1, document2).isHasErrors();
-            assertFalse(notEqual);
+            CompareReport report = PdfCompareUtil.compare(document1, document2);
+
+            assertFalse(report.isHasErrors());
+            assertTrue(report.getCompareErrors().isEmpty());
         }
     }
 
@@ -54,6 +56,7 @@ class PdfCompareUtilTest {
             CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
             boolean isNotOnlyChanged = report.getCompareErrors().stream()
                     .anyMatch(e -> e.getErrorType() != ErrorType.LINE_CHANGED);
             assertFalse(isNotOnlyChanged);
@@ -71,6 +74,7 @@ class PdfCompareUtilTest {
             CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
             boolean isNotOnlyInserted = report.getCompareErrors().stream()
                     .anyMatch(e -> e.getErrorType() != ErrorType.LINE_INSERTED);
             assertFalse(isNotOnlyInserted);
@@ -88,6 +92,7 @@ class PdfCompareUtilTest {
             CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
             boolean isNotOnlyDeleted = report.getCompareErrors().stream()
                     .anyMatch(e -> e.getErrorType() != ErrorType.LINE_DELETED);
             assertFalse(isNotOnlyDeleted);
@@ -105,6 +110,7 @@ class PdfCompareUtilTest {
             CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
             boolean notOnlyPagesMismatch = report.getCompareErrors().stream()
                     .anyMatch(e -> e.getErrorType() != ErrorType.WRONG_SIZE);
             assertFalse(notOnlyPagesMismatch);

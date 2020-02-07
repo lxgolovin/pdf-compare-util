@@ -15,11 +15,11 @@ public class CompareReport {
 
     public void add(CompareError error) {
         Optional.ofNullable(error).map(compareErrors::add);
-        this.hasErrors = true;
+        this.hasErrors = !compareErrors.isEmpty();
     }
 
     public void addAll(List<CompareError> errorList) {
         Optional.ofNullable(errorList).map(compareErrors::addAll);
-        this.hasErrors = true;
+        this.hasErrors = !compareErrors.isEmpty();
     }
 }
