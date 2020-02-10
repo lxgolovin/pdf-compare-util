@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -115,6 +116,20 @@ class PdfCompareUtilTest {
                     .anyMatch(e -> e.getErrorType() != ErrorType.WRONG_SIZE);
             assertFalse(notOnlyPagesMismatch);
         }
+    }
+
+    @Test
+    void writeToTextFile() throws URISyntaxException, IOException {
+        Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
+        Path tempFile;
+
+        try (PdfDocument document = new PdfDocument(samplePath)) {
+            tempFile = PdfCompareUtil.writeToTextFile(document);
+        }
+
+        assertTrue(Files.exists(tempFile));
+        assertTrue(tempFile.toFile().length() > 0);
+        tempFile.toFile().deleteOnExit();
     }
 
     private Path getFilePath(String filename) throws URISyntaxException {

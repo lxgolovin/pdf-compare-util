@@ -7,7 +7,11 @@ import difflib.*;
 import lombok.experimental.UtilityClass;
 import org.apache.pdfbox.text.PDFTextStripper;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +44,16 @@ public final class PdfCompareUtil {
         }
 
         return report;
+    }
+
+    static Path writeToTextFile(PdfDocument document) throws IOException {
+        Path tempFile = Files.createTempFile("", null);
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tempFile.toFile()))) {
+            String sourceText = getTextFromPdf(document);
+            bufferedWriter.write(sourceText);
+        }
+        return tempFile;
     }
 
     private static List<CompareError> reportDifference(String sourceText, String targetText) {
