@@ -1,10 +1,10 @@
 package com.lxgolovin.sandbox.pdf.compare.report;
 
-import lombok.Getter;
+import lombok.Value;
 
 import java.util.Optional;
 
-@Getter
+@Value
 public class CompareError {
 
     private final ErrorType errorType;

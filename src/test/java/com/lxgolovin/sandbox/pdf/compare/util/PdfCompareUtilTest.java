@@ -28,7 +28,7 @@ class PdfCompareUtilTest {
 
     @Test
     void compareNullPdf() {
-        assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.compare(null, null));
+        assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.compare("", null));
     }
 
     @Test
@@ -130,6 +130,57 @@ class PdfCompareUtilTest {
         assertTrue(Files.exists(tempFile));
         assertTrue(tempFile.toFile().length() > 0);
         tempFile.toFile().deleteOnExit();
+    }
+
+    @Test
+    void compareChangedPdfVsTextByText() throws URISyntaxException, IOException {
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
+        Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
+        String originalText = new String(Files.readAllBytes(sample1Path));
+
+        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
+            CompareReport report = PdfCompareUtil.compare(originalText, document2);
+
+            assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
+            boolean isNotOnlyChanged = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_CHANGED);
+            assertFalse(isNotOnlyChanged);
+        }
+    }
+
+    @Test
+    void compareInsertedPdfVsTextByText() throws URISyntaxException, IOException {
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
+        Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
+        String originalText = new String(Files.readAllBytes(sample1Path));
+
+        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
+            CompareReport report = PdfCompareUtil.compare(originalText, document2);
+
+            assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
+            boolean isNotOnlyInserted = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_INSERTED);
+            assertFalse(isNotOnlyInserted);
+        }
+    }
+
+    @Test
+    void compareDeletedPdfVsTextByText() throws URISyntaxException, IOException {
+        Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
+        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
+        String originalText = new String(Files.readAllBytes(sample1Path));
+
+        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
+            CompareReport report = PdfCompareUtil.compare(originalText, document2);
+
+            assertTrue(report.isHasErrors());
+            assertFalse(report.getCompareErrors().isEmpty());
+            boolean isNotOnlyDeleted = report.getCompareErrors().stream()
+                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_DELETED);
+            assertFalse(isNotOnlyDeleted);
+        }
     }
 
     private Path getFilePath(String filename) throws URISyntaxException {

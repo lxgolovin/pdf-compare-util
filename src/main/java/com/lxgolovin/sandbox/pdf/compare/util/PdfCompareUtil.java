@@ -27,6 +27,20 @@ public final class PdfCompareUtil {
                 .orElseThrow(() -> new IllegalArgumentException("Pdf document should not be null"));
     }
 
+    public static CompareReport compare(String originalText, PdfDocument target) throws IOException {
+        Optional.ofNullable(originalText).orElseThrow(() -> new IllegalArgumentException("Original document should not be null"));
+        Optional.ofNullable(target).orElseThrow(() -> new IllegalArgumentException("Target pdf document should not be null"));
+
+        CompareReport report = new CompareReport();
+
+        String targetText = getTextFromPdf(target);
+        if (!originalText.equals(targetText)) {
+            report.addAll(reportDifference(originalText, targetText));
+        }
+
+        return report;
+    }
+
     public static CompareReport compare(PdfDocument source, PdfDocument target) throws IOException {
         Optional.ofNullable(source).orElseThrow(() -> new IllegalArgumentException("Source pdf document should not be null"));
         Optional.ofNullable(target).orElseThrow(() -> new IllegalArgumentException("Target pdf document should not be null"));
