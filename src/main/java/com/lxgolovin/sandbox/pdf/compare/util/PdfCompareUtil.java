@@ -60,14 +60,11 @@ public final class PdfCompareUtil {
         return report;
     }
 
-    static Path writeToTextFile(PdfDocument document) throws IOException {
-        Path tempFile = Files.createTempFile("", null);
-
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tempFile.toFile()))) {
-            String sourceText = getTextFromPdf(document);
-            bufferedWriter.write(sourceText);
-        }
-        return tempFile;
+    public static String getTextFromPdf(PdfDocument document) throws IOException {
+        PDFTextStripper stripper = new PDFTextStripper();
+        stripper.setStartPage(1);
+        stripper.setEndPage(document.getPageCount());
+        return stripper.getText(document.getDocument());
     }
 
     private static List<CompareError> reportDifference(String sourceText, String targetText) {
@@ -103,12 +100,5 @@ public final class PdfCompareUtil {
 
     private static boolean isSameSize(PdfDocument source, PdfDocument target) {
         return source.getPageCount() == target.getPageCount();
-    }
-
-    private static String getTextFromPdf(PdfDocument document) throws IOException {
-        PDFTextStripper stripper = new PDFTextStripper();
-        stripper.setStartPage(1);
-        stripper.setEndPage(document.getPageCount());
-        return stripper.getText(document.getDocument());
     }
 }

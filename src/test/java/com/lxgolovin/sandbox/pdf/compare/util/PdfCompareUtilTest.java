@@ -1,5 +1,6 @@
 package com.lxgolovin.sandbox.pdf.compare.util;
 
+import com.lxgolovin.sandbox.file.util.TextToFile;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
 import org.junit.jupiter.api.Test;
@@ -121,15 +122,16 @@ class PdfCompareUtilTest {
     @Test
     void writeToTextFile() throws URISyntaxException, IOException {
         Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
-        Path tempFile;
+        Path tempFile = Paths.get("text_file.txt");
+        tempFile.toFile().deleteOnExit();
 
         try (PdfDocument document = new PdfDocument(samplePath)) {
-            tempFile = PdfCompareUtil.writeToTextFile(document);
+            String text = PdfCompareUtil.getTextFromPdf(document);
+            TextToFile.write(tempFile, text);
         }
 
         assertTrue(Files.exists(tempFile));
         assertTrue(tempFile.toFile().length() > 0);
-        tempFile.toFile().deleteOnExit();
     }
 
     @Test
@@ -186,5 +188,4 @@ class PdfCompareUtilTest {
     private Path getFilePath(String filename) throws URISyntaxException {
         return Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(filename)).toURI());
     }
-
 }
