@@ -3,7 +3,10 @@ package com.lxgolovin.sandbox.pdf.compare.util;
 import com.lxgolovin.sandbox.file.util.TextToFile;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
+import org.apache.pdfbox.printing.PDFPageable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,20 +19,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PdfCompareUtilTest {
 
-    @Test
-    void getPageCount() throws IOException, URISyntaxException {
-        assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.getPageCount(null));
+    @ParameterizedTest
+    @NullSource
+    void getPageCount(PdfDocument document) throws IOException, URISyntaxException {
+        assertThrows(NullPointerException.class, () -> PdfCompareUtil.getPageCount(document));
 
-        Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
-        try (PdfDocument document = new PdfDocument(samplePath)) {
-            assertEquals(5, document.getPageCount());
-            assertEquals(5, PdfCompareUtil.getPageCount(document));
-        }
+//        Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
+//        try (PdfDocument document = new PdfDocument(samplePath)) {
+//            assertEquals(5, document.getPageCount());
+//            assertEquals(5, PdfCompareUtil.getPageCount(document));
+//        }
     }
 
-    @Test
-    void compareNullPdf() {
-        assertThrows(IllegalArgumentException.class, () -> PdfCompareUtil.compare("", null));
+    @ParameterizedTest
+    @NullSource
+    void compareNullPdf(PdfDocument document) {
+        assertThrows(NullPointerException.class, () -> PdfCompareUtil.compare("", document));
     }
 
     @Test
@@ -138,7 +143,7 @@ class PdfCompareUtilTest {
     void compareChangedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
         Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);
@@ -155,7 +160,7 @@ class PdfCompareUtilTest {
     void compareInsertedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
         Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);
@@ -172,7 +177,7 @@ class PdfCompareUtilTest {
     void compareDeletedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);
