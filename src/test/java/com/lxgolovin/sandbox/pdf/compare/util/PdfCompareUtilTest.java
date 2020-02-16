@@ -138,7 +138,7 @@ class PdfCompareUtilTest {
     void compareChangedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
         Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);
@@ -155,7 +155,7 @@ class PdfCompareUtilTest {
     void compareInsertedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
         Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);
@@ -172,7 +172,7 @@ class PdfCompareUtilTest {
     void compareDeletedPdfVsTextByText() throws URISyntaxException, IOException {
         Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
         Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
-        String originalText = new String(Files.readAllBytes(sample1Path));
+        String originalText = TextToFile.read(sample1Path);
 
         try (PdfDocument document2 = new PdfDocument(sample2Path)) {
             CompareReport report = PdfCompareUtil.compare(originalText, document2);

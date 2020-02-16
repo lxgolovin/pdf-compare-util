@@ -1,10 +1,10 @@
 package com.lxgolovin.sandbox.pdf.compare.report;
 
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Getter
 public class CompareReport {
@@ -13,13 +13,13 @@ public class CompareReport {
 
     private boolean hasErrors;
 
-    public void add(CompareError error) {
-        Optional.ofNullable(error).map(compareErrors::add);
+    public void add(@NonNull CompareError error) {
+        this.compareErrors.add(error);
         this.hasErrors = !compareErrors.isEmpty();
     }
 
-    public void addAll(List<CompareError> errorList) {
-        Optional.ofNullable(errorList).map(compareErrors::addAll);
+    public void addAll(@NonNull List<CompareError> errorList) {
+        this.compareErrors.addAll(errorList);
         this.hasErrors = !compareErrors.isEmpty();
     }
 }
