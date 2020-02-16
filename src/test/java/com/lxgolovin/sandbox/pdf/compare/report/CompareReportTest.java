@@ -1,15 +1,25 @@
 package com.lxgolovin.sandbox.pdf.compare.report;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CompareReportTest {
 
-    @Test
-    void checkArgumentIsNull() {
+    @ParameterizedTest
+    @NullSource
+    void checkCompareErrorIsNull(CompareError compareError) {
         CompareReport report = new CompareReport();
-        assertThrows(NullPointerException.class, () -> report.add(null));
-        assertThrows(NullPointerException.class, () -> report.addAll(null));
+        assertThrows(NullPointerException.class, () -> report.add(compareError));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    void checkArgumentIsNull(List<CompareError> list) {
+        CompareReport report = new CompareReport();
+        assertThrows(NullPointerException.class, () -> report.addAll(list));
     }
 }

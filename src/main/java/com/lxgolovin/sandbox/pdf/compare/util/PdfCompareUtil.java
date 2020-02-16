@@ -1,9 +1,11 @@
 package com.lxgolovin.sandbox.pdf.compare.util;
 
+import ch.qos.logback.core.joran.spi.NoAutoStart;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareError;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
 import difflib.*;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -21,16 +23,13 @@ import java.util.stream.Stream;
 @UtilityClass
 public final class PdfCompareUtil {
 
-    public static int getPageCount(PdfDocument document) {
-        return Optional.ofNullable(document)
+    public static int getPageCount(@NonNull PdfDocument document) {
+        return Optional.of(document)
                 .map(PdfDocument::getPageCount)
-                .orElseThrow(() -> new IllegalArgumentException("Pdf document should not be null"));
+                .orElse(0);
     }
 
-    public static CompareReport compare(String originalText, PdfDocument target) throws IOException {
-        Optional.ofNullable(originalText).orElseThrow(() -> new IllegalArgumentException("Original document should not be null"));
-        Optional.ofNullable(target).orElseThrow(() -> new IllegalArgumentException("Target pdf document should not be null"));
-
+    public static CompareReport compare(@NonNull String originalText, @NonNull PdfDocument target) throws IOException {
         CompareReport report = new CompareReport();
 
         String targetText = getTextFromPdf(target);
@@ -41,10 +40,7 @@ public final class PdfCompareUtil {
         return report;
     }
 
-    public static CompareReport compare(PdfDocument source, PdfDocument target) throws IOException {
-        Optional.ofNullable(source).orElseThrow(() -> new IllegalArgumentException("Source pdf document should not be null"));
-        Optional.ofNullable(target).orElseThrow(() -> new IllegalArgumentException("Target pdf document should not be null"));
-
+    public static CompareReport compare(@NonNull PdfDocument source, @NonNull PdfDocument target) throws IOException {
         CompareReport report = new CompareReport();
 
         if (!isSameSize(source, target)) {
