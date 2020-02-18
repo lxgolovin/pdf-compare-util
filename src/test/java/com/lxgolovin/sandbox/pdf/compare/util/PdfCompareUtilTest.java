@@ -3,9 +3,10 @@ package com.lxgolovin.sandbox.pdf.compare.util;
 import com.lxgolovin.sandbox.file.util.TextToFile;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
-import org.apache.pdfbox.printing.PDFPageable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 
 import java.io.IOException;
@@ -14,10 +15,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class PdfCompareUtilTest {
+    private static Stream<Arguments> providePdfTestsData() {
+        return Stream.of(
+                Arguments.of("sample_text_compare_differ_change.pdf", ErrorType.LINE_CHANGED),
+                Arguments.of("sample_text_compare_differ_delete.pdf", ErrorType.LINE_DELETED),
+                Arguments.of("sample_text_compare_differ_insert.pdf", ErrorType.LINE_INSERTED),
+                Arguments.of("sample_text_compare_differ_pages.pdf", ErrorType.WRONG_SIZE)
+        );
+    }
 
     @ParameterizedTest
     @NullSource
@@ -52,20 +62,21 @@ class PdfCompareUtilTest {
         }
     }
 
-    @Test
-    void compareChangedPdfByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
+    @ParameterizedTest(name = "#{index} - compare pdf VS pdf {1}")
+    @MethodSource("providePdfTestsData")
+    void comparePdfVsPdfByText(String targetFileName, ErrorType errorType) throws URISyntaxException, IOException {
+        Path originalFile = getFilePath("sample_text_compare_equal_1.pdf");
+        Path targetFile = getFilePath(targetFileName);
 
-        try (PdfDocument document1 = new PdfDocument(sample1Path);
-             PdfDocument document2 = new PdfDocument(sample2Path)) {
+        try (PdfDocument document1 = new PdfDocument(originalFile);
+             PdfDocument document2 = new PdfDocument(targetFile)) {
 
             CompareReport report = PdfCompareUtil.compare(document1, document2);
 
             assertTrue(report.isHasErrors());
             assertFalse(report.getCompareErrors().isEmpty());
             boolean isNotOnlyChanged = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_CHANGED);
+                    .anyMatch(e -> e.getErrorType() != errorType);
             assertFalse(isNotOnlyChanged);
         }
     }
