@@ -1,6 +1,5 @@
 package com.lxgolovin.sandbox.pdf.compare.util;
 
-import ch.qos.logback.core.joran.spi.NoAutoStart;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareError;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
@@ -9,11 +8,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.pdfbox.text.PDFTextStripper;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

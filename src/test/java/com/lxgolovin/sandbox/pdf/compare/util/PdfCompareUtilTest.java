@@ -3,6 +3,7 @@ package com.lxgolovin.sandbox.pdf.compare.util;
 import com.lxgolovin.sandbox.file.util.TextToFile;
 import com.lxgolovin.sandbox.pdf.compare.report.CompareReport;
 import com.lxgolovin.sandbox.pdf.compare.report.ErrorType;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("pdf-compare-util-test")
 class PdfCompareUtilTest {
     private static Stream<Arguments> providePdfTestsData() {
         return Stream.of(
@@ -29,37 +31,38 @@ class PdfCompareUtilTest {
         );
     }
 
-    @ParameterizedTest
-    @NullSource
-    void getPageCount(PdfDocument document) throws IOException, URISyntaxException {
-        assertThrows(NullPointerException.class, () -> PdfCompareUtil.getPageCount(document));
+    private static Stream<Arguments> providePdfForTextTestsData() {
+        return Stream.of(
+                Arguments.of("sample_text_compare_differ_change.pdf", ErrorType.LINE_CHANGED),
+                Arguments.of("sample_text_compare_differ_delete.pdf", ErrorType.LINE_DELETED),
+                Arguments.of("sample_text_compare_differ_insert.pdf", ErrorType.LINE_INSERTED)
+        );
+    }
 
-//        Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
-//        try (PdfDocument document = new PdfDocument(samplePath)) {
-//            assertEquals(5, document.getPageCount());
-//            assertEquals(5, PdfCompareUtil.getPageCount(document));
-//        }
+    @Test
+    void getPageCount() throws IOException, URISyntaxException {
+        Path samplePath = getFilePath("sample_text_compare_equal_1.pdf");
+        try (PdfDocument document = new PdfDocument(samplePath)) {
+            assertEquals(5, document.getPageCount());
+            assertEquals(5, PdfCompareUtil.getPageCount(document));
+        }
     }
 
     @ParameterizedTest
     @NullSource
     void compareNullPdf(PdfDocument document) {
+        assertThrows(NullPointerException.class, () -> PdfCompareUtil.getPageCount(document));
         assertThrows(NullPointerException.class, () -> PdfCompareUtil.compare("", document));
     }
 
     @Test
     void compareEqualPdfByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_equal_2.pdf");
+        Path originalFile = getFilePath("sample_text_compare_equal_1.pdf");
+        Path targetFile = getFilePath("sample_text_compare_equal_2.pdf");
 
-        try (PdfDocument document1 = new PdfDocument(sample1Path);
-             PdfDocument document2 = new PdfDocument(sample2Path)) {
-
-            CompareReport report = PdfCompareUtil.compare(document1, document2);
-
-            assertFalse(report.isHasErrors());
-            assertTrue(report.getCompareErrors().isEmpty());
-        }
+        CompareReport report = comparePdfVsPdf(originalFile, targetFile);
+        assertFalse(report.isHasErrors());
+        assertTrue(report.getCompareErrors().isEmpty());
     }
 
     @ParameterizedTest(name = "#{index} - compare pdf VS pdf {1}")
@@ -68,71 +71,27 @@ class PdfCompareUtilTest {
         Path originalFile = getFilePath("sample_text_compare_equal_1.pdf");
         Path targetFile = getFilePath(targetFileName);
 
-        try (PdfDocument document1 = new PdfDocument(originalFile);
-             PdfDocument document2 = new PdfDocument(targetFile)) {
-
-            CompareReport report = PdfCompareUtil.compare(document1, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyChanged = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != errorType);
-            assertFalse(isNotOnlyChanged);
-        }
+        CompareReport report = comparePdfVsPdf(originalFile, targetFile);
+        assertTrue(report.isHasErrors());
+        assertFalse(report.getCompareErrors().isEmpty());
+        boolean isNotOnlyChanged = report.getCompareErrors().stream()
+                .anyMatch(e -> e.getErrorType() != errorType);
+        assertFalse(isNotOnlyChanged);
     }
 
-    @Test
-    void compareInsertedPdfByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
+    @ParameterizedTest(name = "#{index} - compare pdf VS text {1}")
+    @MethodSource("providePdfForTextTestsData")
+    void compareChangedPdfVsTextByText(String targetFileName, ErrorType errorType) throws URISyntaxException, IOException {
+        Path originalFile = getFilePath("sample_text_compare_equal_1.txt");
+        String originalText = TextToFile.read(originalFile);
+        Path targetFile = getFilePath(targetFileName);
 
-        try (PdfDocument document1 = new PdfDocument(sample1Path);
-             PdfDocument document2 = new PdfDocument(sample2Path)) {
-
-            CompareReport report = PdfCompareUtil.compare(document1, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyInserted = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_INSERTED);
-            assertFalse(isNotOnlyInserted);
-        }
-    }
-
-    @Test
-    void compareDeletedPdfByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
-
-        try (PdfDocument document1 = new PdfDocument(sample1Path);
-             PdfDocument document2 = new PdfDocument(sample2Path)) {
-
-            CompareReport report = PdfCompareUtil.compare(document1, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyDeleted = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_DELETED);
-            assertFalse(isNotOnlyDeleted);
-        }
-    }
-
-    @Test
-    void comparePdfPagesNumberMismatch() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.pdf");
-        Path sample2Path = getFilePath("sample_text_compare_differ_pages.pdf");
-
-        try (PdfDocument document1 = new PdfDocument(sample1Path);
-             PdfDocument document2 = new PdfDocument(sample2Path)) {
-
-            CompareReport report = PdfCompareUtil.compare(document1, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean notOnlyPagesMismatch = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.WRONG_SIZE);
-            assertFalse(notOnlyPagesMismatch);
-        }
+        CompareReport report = comparePdfVsText(originalText, targetFile);
+        assertTrue(report.isHasErrors());
+        assertFalse(report.getCompareErrors().isEmpty());
+        boolean isNotOnlyChanged = report.getCompareErrors().stream()
+                .anyMatch(e -> e.getErrorType() != errorType);
+        assertFalse(isNotOnlyChanged);
     }
 
     @Test
@@ -150,54 +109,16 @@ class PdfCompareUtilTest {
         assertTrue(tempFile.toFile().length() > 0);
     }
 
-    @Test
-    void compareChangedPdfVsTextByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
-        Path sample2Path = getFilePath("sample_text_compare_differ_change.pdf");
-        String originalText = TextToFile.read(sample1Path);
-
-        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
-            CompareReport report = PdfCompareUtil.compare(originalText, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyChanged = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_CHANGED);
-            assertFalse(isNotOnlyChanged);
+    private CompareReport comparePdfVsPdf(Path original, Path target) throws IOException {
+        try (PdfDocument originalPdf = new PdfDocument(original);
+             PdfDocument targetPdf = new PdfDocument(target)) {
+            return PdfCompareUtil.compare(originalPdf, targetPdf);
         }
     }
 
-    @Test
-    void compareInsertedPdfVsTextByText() throws URISyntaxException, IOException {
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
-        Path sample2Path = getFilePath("sample_text_compare_differ_insert.pdf");
-        String originalText = TextToFile.read(sample1Path);
-
-        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
-            CompareReport report = PdfCompareUtil.compare(originalText, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyInserted = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_INSERTED);
-            assertFalse(isNotOnlyInserted);
-        }
-    }
-
-    @Test
-    void compareDeletedPdfVsTextByText() throws URISyntaxException, IOException {
-        Path sample2Path = getFilePath("sample_text_compare_differ_delete.pdf");
-        Path sample1Path = getFilePath("sample_text_compare_equal_1.txt");
-        String originalText = TextToFile.read(sample1Path);
-
-        try (PdfDocument document2 = new PdfDocument(sample2Path)) {
-            CompareReport report = PdfCompareUtil.compare(originalText, document2);
-
-            assertTrue(report.isHasErrors());
-            assertFalse(report.getCompareErrors().isEmpty());
-            boolean isNotOnlyDeleted = report.getCompareErrors().stream()
-                    .anyMatch(e -> e.getErrorType() != ErrorType.LINE_DELETED);
-            assertFalse(isNotOnlyDeleted);
+    private CompareReport comparePdfVsText(String originalText, Path targetFile) throws IOException {
+        try (PdfDocument targetPdf = new PdfDocument(targetFile)) {
+            return PdfCompareUtil.compare(originalText, targetPdf);
         }
     }
 
