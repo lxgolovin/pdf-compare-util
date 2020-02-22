@@ -83,10 +83,9 @@ class PdfCompareUtilTest {
     @MethodSource("providePdfForTextTestsData")
     void compareChangedPdfVsTextByText(String targetFileName, ErrorType errorType) throws URISyntaxException, IOException {
         Path originalFile = getFilePath("sample_text_compare_equal_1.txt");
-        String originalText = TextToFile.read(originalFile);
         Path targetFile = getFilePath(targetFileName);
 
-        CompareReport report = comparePdfVsText(originalText, targetFile);
+        CompareReport report = comparePdfVsText(originalFile, targetFile);
         assertTrue(report.isHasErrors());
         assertFalse(report.getCompareErrors().isEmpty());
         boolean isNotOnlyChanged = report.getCompareErrors().stream()
@@ -116,8 +115,9 @@ class PdfCompareUtilTest {
         }
     }
 
-    private CompareReport comparePdfVsText(String originalText, Path targetFile) throws IOException {
+    private CompareReport comparePdfVsText(Path originalFile, Path targetFile) throws IOException {
         try (PdfDocument targetPdf = new PdfDocument(targetFile)) {
+            String originalText = TextToFile.read(originalFile);
             return PdfCompareUtil.compare(originalText, targetPdf);
         }
     }
